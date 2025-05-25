@@ -9,13 +9,19 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "syncable-project-dashboard.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "syncable-project-dashboard.showDashboard",
+        "title": "Show Project Dashboard"
       }
     ]
   },

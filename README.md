@@ -1,71 +1,60 @@
-# syncable-project-dashboard README
+# Syncable Project Dashboard
 
-This is the README for your extension "syncable-project-dashboard". After writing up a brief description, we recommend including the following sections.
+A Visual Studio Code extension that provides a dashboard for easy access to your projects, organized by groups.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- **Auto-start Dashboard**: Opens automatically when VS Code starts.
+- **Project Organization**: Groups projects based on folder structure.
+- **Quick Navigation**: Open projects with a single click.
+- **Configuration Storage**: Remembers your project folder structure.
+- **Accordion View**: Collapsible group panels for better organization.
 
-For example if there is an image subfolder under your extension project workspace:
+## How It Works
 
-\!\[feature X\]\(images/feature-x.png\)
+1. When first launched, the dashboard will ask you to select a base projects folder.
+2. The extension will scan this folder looking for a two-level structure:
+   - First level: Group/Parent folders
+   - Second level: Project folders
+3. Projects are displayed in collapsible group panels.
+4. Click on any project to open it in a new VS Code window.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Project Structure
+
+The extension expects your projects to be organized in a specific way:
+
+```
+BaseProjectsFolder/
+  ├── GroupFolder1/
+  │   ├── Project1/
+  │   ├── Project2/
+  │   └── Project3/
+  ├── GroupFolder2/
+  │   ├── ProjectA/
+  │   └── ProjectB/
+  └── GroupFolder3/
+      └── ProjectX/
+```
+
+## Commands
+
+- `Syncable Project Dashboard: Show Dashboard` - Opens the project dashboard
+- `Syncable Project Dashboard: Hello World` - Display a hello world message (example command)
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+No special requirements or dependencies.
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+This extension stores its configuration in VS Code's global state and doesn't add any settings to the settings.json file.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+### 0.0.1
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Initial release with basic dashboard functionality.
 
 ---
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
 
 **Enjoy!**
