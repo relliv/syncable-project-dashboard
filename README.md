@@ -91,4 +91,8 @@ No special requirements or dependencies.
 
 This extension stores its configuration in VS Code's global state and doesn't add any settings to the settings.json file.
 
+## License
+
+This extension is licensed under the [MIT License](LICENSE).
+
 **Enjoy!**
