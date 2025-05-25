@@ -423,7 +423,7 @@ export class ProjectDashboard {
                         <div class="group-name">${groupName}</div>
                         <div class="group-actions">
                             <button class="group-refresh" data-group="${groupName}" title="Refresh this group">↻</button>
-                            <div class="group-toggle">▼</div>
+                            <div class="group-toggle" title="Collapse/Expand Group">▼</div>
                         </div>
                     </div>
                     <div class="group-projects">
@@ -527,21 +527,35 @@ export class ProjectDashboard {
                 .group-header {
                     display: flex;
                     justify-content: space-between;
-                    padding: 10px 15px;
+                    padding: 8px 12px;
                     background-color: var(--vscode-sideBarSectionHeader-background);
                     cursor: pointer;
                     user-select: none;
+                    align-items: center;
                 }
                 .group-name {
                     font-weight: bold;
+                    padding: 4px 0;
                 }
                 .group-actions {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
+                    gap: 8px;
+                    flex-shrink: 0;
+                    height: 24px;
                 }
                 .group-toggle {
                     transition: transform 0.2s;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 16px;
+                    height: 16px;
+                    line-height: 1;
+                }
+                .group-toggle:hover {
+                    opacity: 1;
+                    color: var(--vscode-button-foreground);
                 }
                 .group-refresh {
                     background: none;
@@ -557,6 +571,7 @@ export class ProjectDashboard {
                     justify-content: center;
                     border-radius: 3px;
                     opacity: 0.6;
+                    line-height: 1;
                 }
                 .group-refresh:hover {
                     background-color: var(--vscode-button-hoverBackground);
@@ -628,6 +643,9 @@ export class ProjectDashboard {
                     font-size: 24px;
                     margin: 0;
                 }
+                .group-actions > * {
+                    cursor: pointer;
+                }
             </style>
         </head>
         <body>
@@ -664,7 +682,7 @@ export class ProjectDashboard {
                 document.querySelectorAll('.group-header').forEach(header => {
                     header.addEventListener('click', (e) => {
                         // Don't toggle if clicking on the refresh button
-                        if (e.target.classList.contains('group-refresh')) {
+                        if (e.target.closest('.group-refresh')) {
                             return;
                         }
                         const group = header.parentElement;
