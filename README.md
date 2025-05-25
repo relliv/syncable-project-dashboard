@@ -1,4 +1,9 @@
-# Sync- **Auto-start Dashboard**: Opens automatically when VS Code starts.
+# Auto-syncable Project Dashboard
+
+![preview](./preview.gif)
+
+Sync- **Auto-start Dashboard**: Opens automatically when VS Code starts.
+
 - **Project Organization**: Groups projects based on folder structure.
 - **Quick Navigation**: Open projects with a single click.
 - **Configuration Storage**: Remembers your project folder structure.
