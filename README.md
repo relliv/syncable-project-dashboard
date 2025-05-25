@@ -22,6 +22,7 @@ A Visual Studio Code extension that provides a dashboard for easy access to your
 - **Search Filter**: Quickly find projects by name.
 - **Sorting Options**: Sort projects alphabetically or by color.
 - **Group Refresh**: Refresh individual groups without rescanning everything.
+- **Configuration Export/Import**: Save and restore your dashboard configuration.
 
 ## How It Works
 
@@ -35,6 +36,8 @@ A Visual Studio Code extension that provides a dashboard for easy access to your
 6. Sort projects using the dropdown menu.
 7. Click on any project to open it in a new VS Code window.
 8. Use the refresh button on a group to update just that group.
+9. Export your configuration to a JSON file for backup or sharing.
+10. Import a previously saved configuration to restore your dashboard setup.
 
 ## Project Structure
 

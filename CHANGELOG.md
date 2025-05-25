@@ -2,6 +2,14 @@
 
 All notable changes to the "Syncable Project Dashboard" extension will be documented in this file.
 
+## [0.0.2] - 2025-05-26
+
+### Added
+
+- Configuration export functionality to save dashboard setup to a JSON file
+- Configuration import functionality to restore dashboard from a saved file
+- Improved responsive layout for the header section
+
 ## [0.0.1] - 2025-05-26
 
 ### Added

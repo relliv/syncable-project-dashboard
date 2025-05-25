@@ -61,6 +61,12 @@ export class ProjectDashboard {
                     case 'toggleGroup':
                         await this.handleToggleGroup(message.groupName, message.expanded);
                         break;
+                    case 'exportConfig':
+                        await this.handleExportConfig();
+                        break;
+                    case 'importConfig':
+                        await this.handleImportConfig();
+                        break;
                 }
             },
             undefined,
@@ -726,7 +732,38 @@ export class ProjectDashboard {
                     margin-top: 20px;
                     font-size: 12px;
                     color: var(--vscode-descriptionForeground);
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 10px;
+                    padding-top: 10px;
+                    border-top: 1px solid var(--vscode-panel-border);
                 }
+                
+                .info-details {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 5px;
+                }
+                
+                .info-actions {
+                    display: flex;
+                    gap: 10px;
+                }
+                
+                .secondary-button {
+                    background-color: var(--vscode-button-secondaryBackground, var(--vscode-editor-background));
+                    color: var(--vscode-button-secondaryForeground, var(--vscode-editor-foreground));
+                    border: 1px solid var(--vscode-button-border, var(--vscode-panel-border));
+                    font-size: 11px;
+                    padding: 4px 8px;
+                }
+                
+                .secondary-button:hover {
+                    background-color: var(--vscode-button-secondaryHoverBackground, var(--vscode-list-hoverBackground));
+                }
+                
                 h1 {
                     color: var(--vscode-editor-foreground);
                     font-size: 24px;
@@ -777,6 +814,16 @@ export class ProjectDashboard {
                     .container {
                         padding: 10px;
                     }
+                    
+                    .info {
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                    
+                    .info-actions {
+                        width: 100%;
+                        justify-content: space-between;
+                    }
                 }
             </style>
         </head>
@@ -806,8 +853,14 @@ export class ProjectDashboard {
                     ${groupsHtml}
                 </div>
                 <div class="info">
-                    <div>Base Folder: ${config.baseProjectsFolder}</div>
-                    <div>Last Scan: ${lastScanTime}</div>
+                    <div class="info-details">
+                        <div>Base Folder: ${config.baseProjectsFolder}</div>
+                        <div>Last Scan: ${lastScanTime}</div>
+                    </div>
+                    <div class="info-actions">
+                        <button id="exportConfig" class="secondary-button">Export Config</button>
+                        <button id="importConfig" class="secondary-button">Import Config</button>
+                    </div>
                 </div>
             </div>
             <script>
@@ -875,6 +928,20 @@ export class ProjectDashboard {
                     });
                 });
                 
+                // Export configuration
+                document.getElementById('exportConfig').addEventListener('click', () => {
+                    vscode.postMessage({
+                        command: 'exportConfig'
+                    });
+                });
+                
+                // Import configuration
+                document.getElementById('importConfig').addEventListener('click', () => {
+                    vscode.postMessage({
+                        command: 'importConfig'
+                    });
+                });
+                
                 // Sort projects
                 document.getElementById('sortSelect').addEventListener('change', (e) => {
                     vscode.postMessage({
@@ -920,5 +987,113 @@ export class ProjectDashboard {
             </script>
         </body>
         </html>`;
+    }
+
+    /**
+     * Handle exporting the configuration
+     */
+    private async handleExportConfig(): Promise<void> {
+        try {
+            const config = this.configManager.getConfig();
+            
+            // Create a file save dialog
+            const saveUri = await vscode.window.showSaveDialog({
+                defaultUri: vscode.Uri.file('project-dashboard-config.json'),
+                filters: {
+                    'JSON Files': ['json']
+                },
+                title: 'Export Project Dashboard Configuration'
+            });
+            
+            if (saveUri) {
+                // Prepare the config for export (remove sensitive data if needed)
+                const exportConfig = {
+                    baseProjectsFolder: config.baseProjectsFolder,
+                    projectsData: config.projectsData,
+                    groupStates: config.groupStates,
+                    lastScanTime: config.lastScanTime
+                };
+                
+                // Convert to pretty JSON
+                const jsonContent = JSON.stringify(exportConfig, null, 2);
+                
+                // Write to file
+                await vscode.workspace.fs.writeFile(saveUri, Buffer.from(jsonContent, 'utf8'));
+                
+                vscode.window.showInformationMessage('Configuration exported successfully!');
+            }
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to export configuration: ${error}`);
+        }
+    }
+
+    /**
+     * Handle importing configuration
+     */
+    private async handleImportConfig(): Promise<void> {
+        try {
+            // Create a file open dialog
+            const openUri = await vscode.window.showOpenDialog({
+                canSelectFiles: true,
+                canSelectFolders: false,
+                canSelectMany: false,
+                filters: {
+                    'JSON Files': ['json']
+                },
+                title: 'Import Project Dashboard Configuration'
+            });
+            
+            if (openUri && openUri.length > 0) {
+                // Read the file
+                const fileData = await vscode.workspace.fs.readFile(openUri[0]);
+                const jsonContent = Buffer.from(fileData).toString('utf8');
+                
+                // Parse the JSON
+                const importedConfig = JSON.parse(jsonContent);
+                
+                // Validate the imported configuration
+                if (!importedConfig.baseProjectsFolder || !importedConfig.projectsData) {
+                    throw new Error('Invalid configuration file');
+                }
+                
+                // Check if base folder exists
+                const baseFolder = importedConfig.baseProjectsFolder;
+                const baseFolderExists = await new Promise<boolean>((resolve) => {
+                    fs.access(baseFolder, fs.constants.F_OK, (err) => {
+                        resolve(!err);
+                    });
+                });
+                
+                if (!baseFolderExists) {
+                    const result = await vscode.window.showWarningMessage(
+                        `The base folder "${baseFolder}" does not exist. Do you want to select a new base folder?`, 
+                        'Yes', 'No'
+                    );
+                    
+                    if (result === 'Yes') {
+                        await this.handleSelectBaseFolder();
+                        // Get the newly selected folder
+                        const config = this.configManager.getConfig();
+                        if (config.baseProjectsFolder) {
+                            importedConfig.baseProjectsFolder = config.baseProjectsFolder;
+                        } else {
+                            throw new Error('No base folder selected');
+                        }
+                    } else {
+                        throw new Error('Base folder does not exist');
+                    }
+                }
+                
+                // Save the imported configuration
+                await this.configManager.saveConfig(importedConfig);
+                
+                // Update the webview
+                await this.updateWebview();
+                
+                vscode.window.showInformationMessage('Configuration imported successfully!');
+            }
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to import configuration: ${error}`);
+        }
     }
 }
