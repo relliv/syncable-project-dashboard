@@ -12,7 +12,7 @@ All notable changes to the "Syncable Project Dashboard" extension will be docume
 - Configuration storage to remember project paths
 - Color detection from project settings
 - Project filtering/search functionality
-- Sorting options (alphabetical, by color)
+- Sorting options for both groups and projects (alphabetical, by color)
 - Individual group refresh
 - Accordion-style group panels with default collapsed state
 - Project count badges in group headers (showing filtered/total counts)

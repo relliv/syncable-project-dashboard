@@ -193,28 +193,40 @@ export class ProjectDashboard {
                 return;
             }
 
-            // For each group, sort the projects
-            for (const groupName of Object.keys(config.projectsData)) {
-                const projects = config.projectsData[groupName];
-                if (!projects) {
-                    continue;
+            // Sort groups if needed
+            if (sortBy.includes('group')) {
+                // Create a sorted copy of the groups
+                const sortedGroups = Object.keys(config.projectsData).sort();
+                
+                // If descending order is requested, reverse the array
+                if (sortBy === 'group-desc') {
+                    sortedGroups.reverse();
                 }
+                
+                // Create a new sorted projectsData object
+                const sortedProjectsData: { [groupName: string]: ProjectInfo[] } = {};
+                for (const groupName of sortedGroups) {
+                    sortedProjectsData[groupName] = config.projectsData[groupName];
+                }
+                
+                // Replace the original with the sorted version
+                config.projectsData = sortedProjectsData;
+            } else {
+                // For each group, sort the projects
+                for (const groupName of Object.keys(config.projectsData)) {
+                    const projects = config.projectsData[groupName];
+                    if (!projects) {
+                        continue;
+                    }
 
-                switch (sortBy) {
-                    case 'name-asc':
-                        projects.sort((a, b) => a.name.localeCompare(b.name));
-                        break;
-                    case 'name-desc':
-                        projects.sort((a, b) => b.name.localeCompare(a.name));
-                        break;
-                    case 'color':
-                        // Sort by color (projects with color first, then alphabetically)
-                        projects.sort((a, b) => {
-                            if (a.color && !b.color) { return -1; }
-                            if (!a.color && b.color) { return 1; }
-                            return a.name.localeCompare(b.name);
-                        });
-                        break;
+                    switch (sortBy) {
+                        case 'name-asc':
+                            projects.sort((a, b) => a.name.localeCompare(b.name));
+                            break;
+                        case 'name-desc':
+                            projects.sort((a, b) => b.name.localeCompare(a.name));
+                            break;
+                    }
                 }
             }
 
@@ -718,9 +730,10 @@ export class ProjectDashboard {
                         </div>
                         <div class="sort-container">
                             <select id="sortSelect">
-                                <option value="name-asc">Name (A-Z)</option>
-                                <option value="name-desc">Name (Z-A)</option>
-                                <option value="color">By Color</option>
+                                <option value="group-asc">Groups (A-Z)</option>
+                                <option value="group-desc">Groups (Z-A)</option>
+                                <option value="name-asc">Projects (A-Z)</option>
+                                <option value="name-desc">Projects (Z-A)</option>
                             </select>
                         </div>
                         <button id="rescan">Rescan Projects</button>
