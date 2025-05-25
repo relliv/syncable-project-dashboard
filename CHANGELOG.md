@@ -1,9 +1,25 @@
 # Change Log
 
-All notable changes to the "syncable-project-dashboard" extension will be documented in this file.
+All notable changes to the "Syncable Project Dashboard" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+## [0.0.1] - 2025-05-26
 
-## [Unreleased]
+### Added
 
 - Initial release
+- Project dashboard that opens on startup
+- Projects organized by group folders
+- Configuration storage to remember project paths
+- Color detection from project settings
+- Project filtering/search functionality
+- Sorting options (alphabetical, by color)
+- Individual group refresh
+- Accordion-style group panels
+
+### Future Plans
+
+- Add ability to favorite projects
+- Add custom tags/labels for projects
+- Support for git repository status
+- Last opened date tracking
+- Custom notes for projects

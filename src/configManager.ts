@@ -2,10 +2,15 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
+export interface ProjectInfo {
+    name: string;
+    color?: string; // Activity bar background color if defined
+}
+
 export interface ProjectConfig {
     baseProjectsFolder?: string;
     projectsData?: {
-        [groupName: string]: string[]; // Group name -> array of project paths
+        [groupName: string]: ProjectInfo[]; // Group name -> array of project info
     };
     lastScanTime?: number;
 }
@@ -66,6 +71,40 @@ export class ConfigManager {
     }
 
     /**
+     * Extract color customization from .vscode/settings.json
+     */
+    public getProjectColor(projectPath: string): string | undefined {
+        try {
+            const settingsPath = path.join(projectPath, '.vscode', 'settings.json');
+            
+            if (fs.existsSync(settingsPath)) {
+                const settingsContent = fs.readFileSync(settingsPath, 'utf-8');
+                const settings = JSON.parse(settingsContent);
+                
+                // Check for activity bar background color
+                if (settings && 
+                    settings.workbench && 
+                    settings.workbench.colorCustomizations && 
+                    settings.workbench.colorCustomizations['activityBar.background']) {
+                    return settings.workbench.colorCustomizations['activityBar.background'];
+                }
+                
+                // Alternative path structure
+                if (settings && 
+                    settings['workbench.colorCustomizations'] && 
+                    settings['workbench.colorCustomizations']['activityBar.background']) {
+                    return settings['workbench.colorCustomizations']['activityBar.background'];
+                }
+            }
+        } catch (error) {
+            // Silently fail - color customization is optional
+            console.error(`Error reading color settings for ${projectPath}:`, error);
+        }
+        
+        return undefined;
+    }
+
+    /**
      * Scan the projects directory and update the config
      */
     public async scanProjects(): Promise<ProjectConfig> {
@@ -80,7 +119,7 @@ export class ConfigManager {
             throw new Error(`Base projects folder does not exist: ${config.baseProjectsFolder}`);
         }
 
-        const projectsData: { [groupName: string]: string[] } = {};
+        const projectsData: { [groupName: string]: ProjectInfo[] } = {};
 
         // Read first level directories (group folders)
         const groupFolders = fs.readdirSync(config.baseProjectsFolder, { withFileTypes: true })
@@ -94,7 +133,19 @@ export class ConfigManager {
                 .filter(dirent => dirent.isDirectory())
                 .map(dirent => dirent.name);
 
-            projectsData[groupName] = projectFolders;
+            const projectInfoList: ProjectInfo[] = [];
+            
+            for (const projectName of projectFolders) {
+                const projectPath = path.join(groupPath, projectName);
+                const color = this.getProjectColor(projectPath);
+                
+                projectInfoList.push({
+                    name: projectName,
+                    color: color
+                });
+            }
+
+            projectsData[groupName] = projectInfoList;
         }
 
         // Update the config

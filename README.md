@@ -9,6 +9,10 @@ A Visual Studio Code extension that provides a dashboard for easy access to your
 - **Quick Navigation**: Open projects with a single click.
 - **Configuration Storage**: Remembers your project folder structure.
 - **Accordion View**: Collapsible group panels for better organization.
+- **Project Colors**: Uses each project's custom activity bar color for better visual recognition.
+- **Search Filter**: Quickly find projects by name.
+- **Sorting Options**: Sort projects alphabetically or by color.
+- **Group Refresh**: Refresh individual groups without rescanning everything.
 
 ## How It Works
 
@@ -17,7 +21,11 @@ A Visual Studio Code extension that provides a dashboard for easy access to your
    - First level: Group/Parent folders
    - Second level: Project folders
 3. Projects are displayed in collapsible group panels.
-4. Click on any project to open it in a new VS Code window.
+4. If a project has a custom color defined in its `.vscode/settings.json` file, the dashboard will use that color for the project box.
+5. Use the search box to filter projects by name.
+6. Sort projects using the dropdown menu.
+7. Click on any project to open it in a new VS Code window.
+8. Use the refresh button on a group to update just that group.
 
 ## Project Structure
 
@@ -36,6 +44,23 @@ BaseProjectsFolder/
       └── ProjectX/
 ```
 
+## Color Customization
+
+The extension automatically detects and uses project-specific color customizations. To set a custom color for your project:
+
+1. In your project, create or edit the `.vscode/settings.json` file
+2. Add a color customization for the activity bar:
+
+```json
+{
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#ff0000"  // Example: red color
+  }
+}
+```
+
+This color will be used as the background color for the project's box in the dashboard.
+
 ## Commands
 
 - `Syncable Project Dashboard: Show Dashboard` - Opens the project dashboard
@@ -53,7 +78,7 @@ This extension stores its configuration in VS Code's global state and doesn't ad
 
 ### 0.0.1
 
-Initial release with basic dashboard functionality.
+Initial release with basic dashboard functionality and project color detection.
 
 ---
 

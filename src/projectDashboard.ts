@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { ConfigManager, ProjectConfig } from './configManager';
+import { ConfigManager, ProjectConfig, ProjectInfo } from './configManager';
 import * as path from 'path';
+import * as fs from 'fs';
 
 export class ProjectDashboard {
     private panel: vscode.WebviewPanel | undefined;
@@ -48,6 +49,12 @@ export class ProjectDashboard {
                         break;
                     case 'rescanProjects':
                         await this.rescanProjects();
+                        break;
+                    case 'refreshGroup':
+                        await this.refreshGroup(message.groupName);
+                        break;
+                    case 'sortProjects':
+                        await this.sortProjects(message.sortBy);
                         break;
                 }
             },
@@ -121,6 +128,98 @@ export class ProjectDashboard {
             await this.updateWebview();
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to scan projects: ${error}`);
+        }
+    }
+
+    /**
+     * Refresh a specific group
+     */
+    private async refreshGroup(groupName: string): Promise<void> {
+        try {
+            const config = this.configManager.getConfig();
+            if (!config.baseProjectsFolder) {
+                throw new Error('Base projects folder not set');
+            }
+
+            // Ensure the group folder exists
+            const groupPath = path.join(config.baseProjectsFolder, groupName);
+            if (!fs.existsSync(groupPath)) {
+                throw new Error(`Group folder does not exist: ${groupName}`);
+            }
+
+            // Scan the group's projects
+            const projectFolders = fs.readdirSync(groupPath, { withFileTypes: true })
+                .filter(dirent => dirent.isDirectory())
+                .map(dirent => dirent.name);
+
+            const projectInfoList: ProjectInfo[] = [];
+            
+            for (const projectName of projectFolders) {
+                const projectPath = path.join(groupPath, projectName);
+                const color = this.configManager.getProjectColor(projectPath);
+                
+                projectInfoList.push({
+                    name: projectName,
+                    color: color
+                });
+            }
+
+            // Update the config
+            if (!config.projectsData) {
+                config.projectsData = {};
+            }
+            config.projectsData[groupName] = projectInfoList;
+            await this.configManager.saveConfig(config);
+
+            // Update the webview
+            await this.updateWebview();
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to refresh group: ${error}`);
+        }
+    }
+
+    /**
+     * Sort projects by different criteria
+     */
+    private async sortProjects(sortBy: string): Promise<void> {
+        try {
+            const config = this.configManager.getConfig();
+            if (!config.projectsData) {
+                return;
+            }
+
+            // For each group, sort the projects
+            for (const groupName of Object.keys(config.projectsData)) {
+                const projects = config.projectsData[groupName];
+                if (!projects) {
+                    continue;
+                }
+
+                switch (sortBy) {
+                    case 'name-asc':
+                        projects.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'name-desc':
+                        projects.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'color':
+                        // Sort by color (projects with color first, then alphabetically)
+                        projects.sort((a, b) => {
+                            if (a.color && !b.color) { return -1; }
+                            if (!a.color && b.color) { return 1; }
+                            return a.name.localeCompare(b.name);
+                        });
+                        break;
+                }
+            }
+
+            // Save the sorted projects
+            await this.configManager.saveConfig(config);
+            
+            // Update the webview
+            await this.updateWebview();
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to sort projects: ${error}`);
         }
     }
 
@@ -297,11 +396,22 @@ export class ProjectDashboard {
             const projects = config.projectsData[groupName];
             let projectsHtml = '';
 
-            for (const projectName of projects) {
+            for (const project of projects) {
+                // Apply custom color if available, otherwise use default
+                const customStyle = project.color 
+                    ? `style="background-color: ${project.color};"` 
+                    : '';
+                
+                // Add a small indicator if the project has a custom color
+                const colorIndicator = project.color 
+                    ? `<div class="color-indicator" title="This project has a custom theme color"></div>` 
+                    : '';
+                
                 projectsHtml += `
-                    <div class="project" data-path="${groupName}/${projectName}">
-                        <div class="project-inner">
-                            <div class="project-name">${projectName}</div>
+                    <div class="project" data-path="${groupName}/${project.name}">
+                        <div class="project-inner" ${customStyle}>
+                            ${colorIndicator}
+                            <div class="project-name">${project.name}</div>
                         </div>
                     </div>
                 `;
@@ -311,7 +421,10 @@ export class ProjectDashboard {
                 <div class="group">
                     <div class="group-header">
                         <div class="group-name">${groupName}</div>
-                        <div class="group-toggle">▼</div>
+                        <div class="group-actions">
+                            <button class="group-refresh" data-group="${groupName}" title="Refresh this group">↻</button>
+                            <div class="group-toggle">▼</div>
+                        </div>
                     </div>
                     <div class="group-projects">
                         ${projectsHtml}
@@ -353,6 +466,44 @@ export class ProjectDashboard {
                 .controls {
                     display: flex;
                     gap: 10px;
+                    align-items: center;
+                }
+                .search-container {
+                    position: relative;
+                }
+                #searchInput {
+                    padding: 6px 10px;
+                    border-radius: 3px;
+                    border: 1px solid var(--vscode-input-border);
+                    background-color: var(--vscode-input-background);
+                    color: var(--vscode-input-foreground);
+                    font-size: 12px;
+                    width: 200px;
+                }
+                #searchInput:focus {
+                    outline: 1px solid var(--vscode-focusBorder);
+                }
+                .sort-container {
+                    position: relative;
+                }
+                #sortSelect {
+                    padding: 6px 10px;
+                    border-radius: 3px;
+                    border: 1px solid var(--vscode-dropdown-border);
+                    background-color: var(--vscode-dropdown-background);
+                    color: var(--vscode-dropdown-foreground);
+                    font-size: 12px;
+                    appearance: none;
+                    padding-right: 20px;
+                }
+                .sort-container::after {
+                    content: '▼';
+                    font-size: 8px;
+                    position: absolute;
+                    right: 8px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    pointer-events: none;
                 }
                 button {
                     background-color: var(--vscode-button-background);
@@ -384,8 +535,32 @@ export class ProjectDashboard {
                 .group-name {
                     font-weight: bold;
                 }
+                .group-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
                 .group-toggle {
                     transition: transform 0.2s;
+                }
+                .group-refresh {
+                    background: none;
+                    border: none;
+                    color: var(--vscode-foreground);
+                    cursor: pointer;
+                    font-size: 14px;
+                    padding: 0;
+                    width: 24px;
+                    height: 24px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 3px;
+                    opacity: 0.6;
+                }
+                .group-refresh:hover {
+                    background-color: var(--vscode-button-hoverBackground);
+                    opacity: 1;
                 }
                 .group-projects {
                     display: grid;
@@ -405,6 +580,7 @@ export class ProjectDashboard {
                     overflow: hidden;
                     cursor: pointer;
                     transition: transform 0.1s, box-shadow 0.1s;
+                    border: 2px solid transparent;
                 }
                 .project-inner {
                     height: 100%;
@@ -416,14 +592,31 @@ export class ProjectDashboard {
                     background-color: var(--vscode-button-background);
                     color: var(--vscode-button-foreground);
                     text-align: center;
+                    position: relative;
+                }
+                .project-inner[style*="background-color"] {
+                    color: #ffffff;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
                 }
                 .project:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                    border-color: var(--vscode-focusBorder);
                 }
                 .project-name {
                     font-weight: bold;
                     word-break: break-word;
+                }
+                .color-indicator {
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    background-color: #ffffff;
+                    border: 1px solid rgba(0, 0, 0, 0.2);
+                    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                 }
                 .info {
                     margin-top: 20px;
@@ -442,6 +635,16 @@ export class ProjectDashboard {
                 <div class="header">
                     <h1>Project Dashboard</h1>
                     <div class="controls">
+                        <div class="search-container">
+                            <input type="text" id="searchInput" placeholder="Search projects...">
+                        </div>
+                        <div class="sort-container">
+                            <select id="sortSelect">
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="color">By Color</option>
+                            </select>
+                        </div>
                         <button id="rescan">Rescan Projects</button>
                         <button id="changeFolder">Change Base Folder</button>
                     </div>
@@ -459,9 +662,25 @@ export class ProjectDashboard {
                 
                 // Toggle group collapse
                 document.querySelectorAll('.group-header').forEach(header => {
-                    header.addEventListener('click', () => {
+                    header.addEventListener('click', (e) => {
+                        // Don't toggle if clicking on the refresh button
+                        if (e.target.classList.contains('group-refresh')) {
+                            return;
+                        }
                         const group = header.parentElement;
                         group.classList.toggle('collapsed');
+                    });
+                });
+                
+                // Refresh individual group
+                document.querySelectorAll('.group-refresh').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent group toggle
+                        const groupName = button.getAttribute('data-group');
+                        vscode.postMessage({
+                            command: 'refreshGroup',
+                            groupName: groupName
+                        });
                     });
                 });
                 
@@ -487,6 +706,31 @@ export class ProjectDashboard {
                 document.getElementById('changeFolder').addEventListener('click', () => {
                     vscode.postMessage({
                         command: 'selectBaseFolder'
+                    });
+                });
+                
+                // Sort projects
+                document.getElementById('sortSelect').addEventListener('change', (e) => {
+                    vscode.postMessage({
+                        command: 'sortProjects',
+                        sortBy: e.target.value
+                    });
+                });
+                
+                // Search/filter projects
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('.project').forEach(project => {
+                        const projectName = project.querySelector('.project-name').textContent.toLowerCase();
+                        const isVisible = projectName.includes(searchTerm);
+                        project.style.display = isVisible ? '' : 'none';
+                    });
+                    
+                    // Show/hide groups based on whether they have any visible projects
+                    document.querySelectorAll('.group').forEach(group => {
+                        const hasVisibleProjects = Array.from(group.querySelectorAll('.project'))
+                            .some(project => project.style.display !== 'none');
+                        group.style.display = hasVisibleProjects ? '' : 'none';
                     });
                 });
             </script>
