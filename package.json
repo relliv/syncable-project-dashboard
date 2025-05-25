@@ -39,5 +39,9 @@
     "typescript": "^5.8.3",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.5.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/relliv/syncable-project-dashboard.git"
   }
 }
