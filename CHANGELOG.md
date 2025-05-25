@@ -16,6 +16,7 @@ All notable changes to the "Syncable Project Dashboard" extension will be docume
 - Individual group refresh
 - Accordion-style group panels with default collapsed state
 - Project count badges in group headers (showing filtered/total counts)
+- Persistent accordion state memory (groups stay expanded/collapsed between sessions)
 
 ### Future Plans
 

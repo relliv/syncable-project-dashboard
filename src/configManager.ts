@@ -13,6 +13,9 @@ export interface ProjectConfig {
         [groupName: string]: ProjectInfo[]; // Group name -> array of project info
     };
     lastScanTime?: number;
+    groupStates?: {
+        [groupName: string]: boolean; // Group name -> expanded state (true = expanded, false = collapsed)
+    };
 }
 
 export class ConfigManager {

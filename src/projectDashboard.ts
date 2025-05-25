@@ -249,30 +249,32 @@ export class ProjectDashboard {
      */
     private async handleToggleGroup(groupName: string, expanded: boolean): Promise<void> {
         try {
+            // Get current config
+            const config = this.configManager.getConfig();
+            
+            // Initialize groupStates if it doesn't exist
+            if (!config.groupStates) {
+                config.groupStates = {};
+            }
+            
             // Save the new state
-            const states = this.getGroupStates();
-            states[groupName] = expanded;
-            await this.saveGroupStates(states);
+            config.groupStates[groupName] = expanded;
+            
+            // Save config
+            await this.configManager.saveConfig(config);
 
-            // Update the webview
-            await this.updateWebview();
+            // No need to update webview here, as the state is already updated in the UI
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to toggle group: ${error}`);
         }
     }
 
     /**
-     * Save group expanded states to user preferences
-     */
-    private saveGroupStates(states: { [groupName: string]: boolean }): Thenable<void> {
-        return this.context.globalState.update('syncableProjectDashboard.groupStates', states);
-    }
-
-    /**
      * Get saved group expanded states
      */
     private getGroupStates(): { [groupName: string]: boolean } {
-        return this.context.globalState.get<{ [groupName: string]: boolean }>('syncableProjectDashboard.groupStates', {});
+        const config = this.configManager.getConfig();
+        return config.groupStates || {};
     }
 
     /**
@@ -743,15 +745,19 @@ export class ProjectDashboard {
                         if (e.target.closest('.group-refresh')) {
                             return;
                         }
+                        
                         const group = header.parentElement;
                         group.classList.toggle('collapsed');
                         
+                        // Get group name (without the count badge)
+                        const groupNameElement = header.querySelector('.group-name');
+                        const groupNameText = groupNameElement.childNodes[0].nodeValue.trim();
+                        
                         // Save the new state
-                        const groupName = header.querySelector('.group-name').textContent;
                         const isExpanded = !group.classList.contains('collapsed');
                         vscode.postMessage({
                             command: 'toggleGroup',
-                            groupName: groupName,
+                            groupName: groupNameText,
                             expanded: isExpanded
                         });
                     });
