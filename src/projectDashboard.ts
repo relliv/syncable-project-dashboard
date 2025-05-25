@@ -519,16 +519,20 @@ export class ProjectDashboard {
                 }
                 .header {
                     display: flex;
+                    flex-direction: row;
                     justify-content: space-between;
                     align-items: center;
                     margin-bottom: 20px;
                     padding-bottom: 10px;
                     border-bottom: 1px solid var(--vscode-panel-border);
+                    flex-wrap: wrap;
+                    gap: 15px;
                 }
                 .controls {
                     display: flex;
                     gap: 10px;
                     align-items: center;
+                    flex-wrap: wrap;
                 }
                 .search-container {
                     position: relative;
@@ -567,6 +571,11 @@ export class ProjectDashboard {
                     transform: translateY(-50%);
                     pointer-events: none;
                 }
+                
+                .button-container {
+                    display: flex;
+                    gap: 10px;
+                }
                 button {
                     background-color: var(--vscode-button-background);
                     color: var(--vscode-button-foreground);
@@ -575,9 +584,17 @@ export class ProjectDashboard {
                     cursor: pointer;
                     border-radius: 2px;
                     font-size: 12px;
+                    white-space: nowrap;
                 }
                 button:hover {
                     background-color: var(--vscode-button-hoverBackground);
+                }
+                
+                @media (max-width: 480px) {
+                    button {
+                        width: 100%;
+                        margin-top: 5px;
+                    }
                 }
                 .group {
                     margin-bottom: 20px;
@@ -718,6 +735,49 @@ export class ProjectDashboard {
                 .group-actions > * {
                     cursor: pointer;
                 }
+                
+                /* Responsive styles */
+                @media (max-width: 768px) {
+                    .header {
+                        flex-direction: column;
+                        align-items: flex-start;
+                    }
+                    
+                    .controls {
+                        width: 100%;
+                        justify-content: space-between;
+                    }
+                    
+                    #searchInput {
+                        width: 100%;
+                        min-width: 150px;
+                    }
+                }
+                
+                @media (max-width: 480px) {
+                    .controls {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+                    
+                    .search-container, .sort-container, .button-container {
+                        width: 100%;
+                    }
+                    
+                    .button-container {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 5px;
+                    }
+                    
+                    #sortSelect {
+                        width: 100%;
+                    }
+                    
+                    .container {
+                        padding: 10px;
+                    }
+                }
             </style>
         </head>
         <body>
@@ -736,8 +796,10 @@ export class ProjectDashboard {
                                 <option value="name-desc">Projects (Z-A)</option>
                             </select>
                         </div>
-                        <button id="rescan">Rescan Projects</button>
-                        <button id="changeFolder">Change Base Folder</button>
+                        <div class="button-container">
+                            <button id="rescan">Rescan Projects</button>
+                            <button id="changeFolder">Change Base Folder</button>
+                        </div>
                     </div>
                 </div>
                 <div class="groups">
