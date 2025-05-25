@@ -1,4 +1,4 @@
-# Auto-syncable Project Dashboard
+# Auto-syncable Project Dashboard (WIP)
 
 ![preview](./preview.gif)
 
