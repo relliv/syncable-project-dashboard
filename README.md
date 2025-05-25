@@ -91,12 +91,4 @@ No special requirements or dependencies.
 
 This extension stores its configuration in VS Code's global state and doesn't add any settings to the settings.json file.
 
-## Release Notes
-
-### 0.0.1
-
-Initial release with basic dashboard functionality and project color detection.
-
----
-
 **Enjoy!**
