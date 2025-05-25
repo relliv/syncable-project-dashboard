@@ -26,7 +26,7 @@ export class ProjectDashboard {
         // Create a new panel
         this.panel = vscode.window.createWebviewPanel(
             'projectDashboard',
-            'Project Dashboard',
+            '📌 Project Dashboard',
             vscode.ViewColumn.One,
             {
                 enableScripts: true,
@@ -298,7 +298,7 @@ export class ProjectDashboard {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Project Dashboard</title>
+            <title>📌 Project Dashboard</title>
             <style>
                 body {
                     font-family: var(--vscode-font-family);
@@ -364,7 +364,7 @@ export class ProjectDashboard {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Project Dashboard</title>
+            <title>📌 Project Dashboard</title>
             <style>
                 body {
                     font-family: var(--vscode-font-family);
@@ -505,7 +505,7 @@ export class ProjectDashboard {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Project Dashboard</title>
+            <title>📌 Project Dashboard</title>
             <style>
                 body {
                     font-family: var(--vscode-font-family);
@@ -783,7 +783,7 @@ export class ProjectDashboard {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>Project Dashboard</h1>
+                    <h1>📌 Project Dashboard</h1>
                     <div class="controls">
                         <div class="search-container">
                             <input type="text" id="searchInput" placeholder="Search projects...">
