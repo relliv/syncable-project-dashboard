@@ -650,20 +650,19 @@ export class ProjectDashboard {
                     transform: rotate(-90deg);
                 }
                 .project {
-                    height: 100px;
-                    border-radius: 3px;
+                    border-radius: 5px;
                     overflow: hidden;
                     cursor: pointer;
                     transition: transform 0.1s, box-shadow 0.1s;
                     border: 2px solid transparent;
                 }
                 .project-inner {
-                    height: 100%;
+                    height: 50px;
                     display: flex;
                     flex-direction: column;
                     justify-content: center;
                     align-items: center;
-                    padding: 15px;
+                    padding: 5px 15px;
                     background-color: var(--vscode-button-background);
                     color: var(--vscode-button-foreground);
                     text-align: center;
@@ -679,7 +678,6 @@ export class ProjectDashboard {
                     border-color: var(--vscode-focusBorder);
                 }
                 .project-name {
-                    font-weight: bold;
                     word-break: break-word;
                 }
                 .color-indicator {
