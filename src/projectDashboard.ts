@@ -593,7 +593,7 @@ export class ProjectDashboard {
                     color: var(--vscode-badge-foreground);
                     border-radius: 10px;
                     font-size: 0.5em;
-                    padding: 2px 6px;
+                    padding: 4px 6px;
                     font-weight: normal;
                     display: inline-block;
                 }
