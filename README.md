@@ -1,4 +1,13 @@
-# Syncable Project Dashboard
+# Sync- **Auto-start Dashboard**: Opens automatically when VS Code starts.
+- **Project Organization**: Groups projects based on folder structure.
+- **Quick Navigation**: Open projects with a single click.
+- **Configuration Storage**: Remembers your project folder structure.
+- **Accordion View**: Collapsible group panels for better organization. Groups are collapsed by default for a cleaner look.
+- **Project Count Badges**: Shows the number of projects in each group header, and updates dynamically when filtering.
+- **Project Colors**: Uses each project's custom activity bar color for better visual recognition.
+- **Search Filter**: Quickly find projects by name.
+- **Sorting Options**: Sort projects alphabetically or by color.
+- **Group Refresh**: Refresh individual groups without rescanning everything.ect Dashboard
 
 A Visual Studio Code extension that provides a dashboard for easy access to your projects, organized by groups.
 

@@ -15,6 +15,7 @@ All notable changes to the "Syncable Project Dashboard" extension will be docume
 - Sorting options (alphabetical, by color)
 - Individual group refresh
 - Accordion-style group panels with default collapsed state
+- Project count badges in group headers (showing filtered/total counts)
 
 ### Future Plans
 

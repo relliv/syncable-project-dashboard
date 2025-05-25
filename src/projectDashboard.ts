@@ -458,11 +458,17 @@ export class ProjectDashboard {
 
             // Check if the group is expanded or collapsed
             const isExpanded = savedGroupStates[groupName] === true; // Default to collapsed
+            
+            // Get the project count for this group
+            const projectCount = projects.length;
 
             groupsHtml += `
                 <div class="group ${isExpanded ? '' : 'collapsed'}">
                     <div class="group-header">
-                        <div class="group-name">${groupName}</div>
+                        <div class="group-name">
+                            ${groupName}
+                            <span class="project-count" title="${projectCount} projects">${projectCount}</span>
+                        </div>
                         <div class="group-actions">
                             <button class="group-refresh" data-group="${groupName}" title="Refresh this group">↻</button>
                             <div class="group-toggle" title="Collapse/Expand Group">▼</div>
@@ -578,6 +584,18 @@ export class ProjectDashboard {
                 .group-name {
                     font-weight: bold;
                     padding: 4px 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .project-count {
+                    background-color: var(--vscode-badge-background);
+                    color: var(--vscode-badge-foreground);
+                    border-radius: 10px;
+                    font-size: 0.5em;
+                    padding: 2px 6px;
+                    font-weight: normal;
+                    display: inline-block;
                 }
                 .group-actions {
                     display: flex;
@@ -797,9 +815,27 @@ export class ProjectDashboard {
                     
                     // Show/hide groups based on whether they have any visible projects
                     document.querySelectorAll('.group').forEach(group => {
-                        const hasVisibleProjects = Array.from(group.querySelectorAll('.project'))
-                            .some(project => project.style.display !== 'none');
+                        const visibleProjects = Array.from(group.querySelectorAll('.project'))
+                            .filter(project => project.style.display !== 'none');
+                        const hasVisibleProjects = visibleProjects.length > 0;
                         group.style.display = hasVisibleProjects ? '' : 'none';
+                        
+                        // Update the project count badge to show only visible projects
+                        if (hasVisibleProjects) {
+                            const projectCount = group.querySelector('.project-count');
+                            if (projectCount) {
+                                const totalCount = group.querySelectorAll('.project').length;
+                                const visibleCount = visibleProjects.length;
+                                
+                                if (visibleCount < totalCount) {
+                                    projectCount.textContent = visibleCount + '/' + totalCount;
+                                    projectCount.title = visibleCount + ' matching out of ' + totalCount + ' total projects';
+                                } else {
+                                    projectCount.textContent = totalCount;
+                                    projectCount.title = totalCount + ' projects';
+                                }
+                            }
+                        }
                     });
                 });
             </script>
