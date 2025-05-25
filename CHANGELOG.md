@@ -14,7 +14,7 @@ All notable changes to the "Syncable Project Dashboard" extension will be docume
 - Project filtering/search functionality
 - Sorting options (alphabetical, by color)
 - Individual group refresh
-- Accordion-style group panels
+- Accordion-style group panels with default collapsed state
 
 ### Future Plans
 

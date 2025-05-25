@@ -6,15 +6,17 @@ import * as fs from 'fs';
 export class ProjectDashboard {
     private panel: vscode.WebviewPanel | undefined;
     private configManager: ConfigManager;
+    private context: vscode.ExtensionContext;
 
-    constructor(configManager: ConfigManager) {
+    constructor(configManager: ConfigManager, context: vscode.ExtensionContext) {
         this.configManager = configManager;
+        this.context = context;
     }
 
     /**
      * Open the dashboard panel
      */
-    public async open(context: vscode.ExtensionContext): Promise<void> {
+    public async open(): Promise<void> {
         // If we already have a panel, show it
         if (this.panel) {
             this.panel.reveal(vscode.ViewColumn.One);
@@ -35,7 +37,7 @@ export class ProjectDashboard {
         // Handle panel disposal
         this.panel.onDidDispose(() => {
             this.panel = undefined;
-        }, null, context.subscriptions);
+        }, null, this.context.subscriptions);
 
         // Handle messages from the webview
         this.panel.webview.onDidReceiveMessage(
@@ -56,10 +58,13 @@ export class ProjectDashboard {
                     case 'sortProjects':
                         await this.sortProjects(message.sortBy);
                         break;
+                    case 'toggleGroup':
+                        await this.handleToggleGroup(message.groupName, message.expanded);
+                        break;
                 }
             },
             undefined,
-            context.subscriptions
+            this.context.subscriptions
         );
 
         // Load projects and update the webview
@@ -240,6 +245,37 @@ export class ProjectDashboard {
     }
 
     /**
+     * Handle toggling a group's expanded/collapsed state
+     */
+    private async handleToggleGroup(groupName: string, expanded: boolean): Promise<void> {
+        try {
+            // Save the new state
+            const states = this.getGroupStates();
+            states[groupName] = expanded;
+            await this.saveGroupStates(states);
+
+            // Update the webview
+            await this.updateWebview();
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to toggle group: ${error}`);
+        }
+    }
+
+    /**
+     * Save group expanded states to user preferences
+     */
+    private saveGroupStates(states: { [groupName: string]: boolean }): Thenable<void> {
+        return this.context.globalState.update('syncableProjectDashboard.groupStates', states);
+    }
+
+    /**
+     * Get saved group expanded states
+     */
+    private getGroupStates(): { [groupName: string]: boolean } {
+        return this.context.globalState.get<{ [groupName: string]: boolean }>('syncableProjectDashboard.groupStates', {});
+    }
+
+    /**
      * Get HTML for no folder selected state
      */
     private getNoFolderHtml(): string {
@@ -392,6 +428,9 @@ export class ProjectDashboard {
         const groups = Object.keys(config.projectsData);
         let groupsHtml = '';
 
+        // Get saved group states
+        const savedGroupStates = this.getGroupStates();
+
         for (const groupName of groups) {
             const projects = config.projectsData[groupName];
             let projectsHtml = '';
@@ -417,8 +456,11 @@ export class ProjectDashboard {
                 `;
             }
 
+            // Check if the group is expanded or collapsed
+            const isExpanded = savedGroupStates[groupName] === true; // Default to collapsed
+
             groupsHtml += `
-                <div class="group">
+                <div class="group ${isExpanded ? '' : 'collapsed'}">
                     <div class="group-header">
                         <div class="group-name">${groupName}</div>
                         <div class="group-actions">
@@ -687,6 +729,15 @@ export class ProjectDashboard {
                         }
                         const group = header.parentElement;
                         group.classList.toggle('collapsed');
+                        
+                        // Save the new state
+                        const groupName = header.querySelector('.group-name').textContent;
+                        const isExpanded = !group.classList.contains('collapsed');
+                        vscode.postMessage({
+                            command: 'toggleGroup',
+                            groupName: groupName,
+                            expanded: isExpanded
+                        });
                     });
                 });
                 

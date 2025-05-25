@@ -15,11 +15,11 @@ export function activate(context: vscode.ExtensionContext) {
 	const configManager = new ConfigManager(context);
 	
 	// Initialize the project dashboard
-	const dashboard = new ProjectDashboard(configManager);
+	const dashboard = new ProjectDashboard(configManager, context);
 
 	// Register the showDashboard command
 	const showDashboardCommand = vscode.commands.registerCommand('syncable-project-dashboard.showDashboard', () => {
-		dashboard.open(context).catch((err: Error) => {
+		dashboard.open().catch((err: Error) => {
 			vscode.window.showErrorMessage(`Failed to open dashboard: ${err}`);
 		});
 	});
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	// Open the dashboard when the extension is activated
-	dashboard.open(context).catch((err: Error) => {
+	dashboard.open().catch((err: Error) => {
 		vscode.window.showErrorMessage(`Failed to open dashboard: ${err}`);
 	});
 
